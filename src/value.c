@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+#include "object.h"
 #include "memory.h"
 #include "value.h"
 
@@ -29,6 +30,7 @@ void printValue(Value value) {
   case VAL_BOOL: printf(AS_BOOL(value) ? "true" : "false"); break;
   case VAL_NIL: printf("nil"); break;
   case VAL_NUMBER: printf("%g", AS_NUMBER(value)); break;
+  case VAL_OBJ: printObject(value); break;
   default:
     printf("Unhandled value type &d\n", value.type);
   }
@@ -44,6 +46,7 @@ bool valuesEqual(Value a, Value b) {
   case VAL_BOOL:   return AS_BOOL(a) == AS_BOOL(b);
   case VAL_NIL:    return true;
   case VAL_NUMBER: return AS_NUMBER(a) == AS_NUMBER(b);
+  case VAL_OBJ:    return objectsEqual(a, b);
   default:
     printf("Unhandled value type &d\n", a.type);
   }
