@@ -10,7 +10,6 @@ typedef struct {
   int line;
 } Lexer;
 
-// TODO: remove global var and explicitly take a pointer and pass it around
 Lexer lexer;
 
 void initLexer(const char* source) {
