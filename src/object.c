@@ -52,8 +52,8 @@ bool objectsEqual(Value a, Value b) {
 
   switch (OBJ_TYPE(a)) {
   case OBJ_STRING:
-    ObjString* aString = AS_STRING(a);
-    ObjString* bString = AS_STRING(b);
+    ObjString *aString = AS_STRING(a);
+    ObjString *bString = AS_STRING(b);
     return aString->length == bString->length &&
       memcmp(aString->chars, bString->chars, aString->length) == 0;
   default:

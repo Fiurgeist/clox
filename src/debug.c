@@ -3,7 +3,7 @@
 #include "debug.h"
 #include "value.h"
 
-void disassembleChunk(Chunk* chunk, const char* name) {
+void disassembleChunk(Chunk *chunk, const char *name) {
   printf("== %s ==\n", name);
 
   for (int offset = 0; offset < chunk->count;) {
@@ -11,7 +11,7 @@ void disassembleChunk(Chunk* chunk, const char* name) {
   }
 }
 
-int constantInstruction(const char* name, Chunk* chunk, int offset) {
+int constantInstruction(const char *name, Chunk *chunk, int offset) {
   uint8_t constant = chunk->code[offset + 1];
   printf("%-16s %4d '", name, constant);
   printValue(chunk->constants.values[constant]);
@@ -19,12 +19,12 @@ int constantInstruction(const char* name, Chunk* chunk, int offset) {
   return offset + 2;
 }
 
-int simpleInstruction(const char* name, int offset) {
+int simpleInstruction(const char *name, int offset) {
   printf("%s\n", name);
   return offset + 1;
 }
 
-int disassembleInstruction(Chunk* chunk, int offset) {
+int disassembleInstruction(Chunk *chunk, int offset) {
   printf("%04d ", offset);
   if (offset > 0 && chunk->lines[offset] == chunk->lines[offset - 1]) {
     printf("   | ");

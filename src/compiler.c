@@ -9,6 +9,57 @@
 #include "debug.h"
 #endif
 
+/*
+program        → declaration* EOF ;
+
+declaration    → varDecl
+               | classDecl
+               | funDecl
+               | statement ;
+classDecl      → "class" IDENTIFIER ( "<" IDENTIFIER )? "{" function* "}" ;
+varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
+funDecl        → "fun" function ;
+function       → IDENTIFIER "(" parameters? ")" block ;
+parameters     → IDENTIFIER ( "," IDENTIFIER )* ;
+
+statement      → exprStmt
+               | printStmt
+               | ifStmt
+               | whileStmt
+               | forStmt
+               | breakStmt
+               | returnStmt
+               | block ;
+
+exprStmt       → expression ";" ;
+printStmt      → "print" expression ";" ;
+ifStmt         → "if" "(" expression ")" statement
+               ( "else" statement )? ;
+whileStmt      → "while" "(" expression ")" statement ;
+forStmt        → "for" "(" ( varDecl | exprStmt | ";" )
+                 expression? ";"
+                 expression? ")" statement ;
+breakStmt      → "break" ";" ;
+returnStmt     → "return" expression? ";" ;
+block          → "{" declaration* "}" ;
+
+expression     → assignment ;
+assignment     → ( call "." )? IDENTIFIER "=" assignment
+               | logic_or ;
+logic_or       → logic_and ( "or" logic_and )* ;
+logic_and      → equality ( "and" equality )* ;
+equality       → comparison ( ( "!=" | "==" ) comparison )* ;
+comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+term           → factor ( ( "-" | "+" ) factor )* ;
+factor         → unary ( ( "/" | "*" ) unary )* ;
+unary          → ( "!" | "-" ) unary | call ;
+call           → primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
+arguments      → expression ( "," expression )* ;
+primary        → NUMBER | STRING | "true" | "false" | "nil" | "this"
+               | "(" expression ")" | IDENTIFIER
+               | "super" "." IDENTIFIER ;
+*/
+
 typedef struct {
   Token current;
   Token previous;
@@ -138,7 +189,7 @@ static void parsePrecedence(Precedence precedence);
 
 static void binary() {
   TokenType operatorType = parser.previous.type;
-  ParseRule* rule = getRule(operatorType);
+  ParseRule *rule = getRule(operatorType);
 
   parsePrecedence((Precedence)(rule->precedence + 1));
 

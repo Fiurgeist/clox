@@ -24,14 +24,14 @@ void writeChunk(Chunk *chunk, uint8_t byte, int line) {
   chunk->count++;
 }
 
-void freeChunk(Chunk* chunk) {
+void freeChunk(Chunk *chunk) {
   FREE_ARRAY(uint8_t, chunk->code, chunk->capacity);
   FREE_ARRAY(int, chunk->lines, chunk->capacity);
   freeValueArray(&chunk->constants);
   initChunk(chunk);
 }
 
-int addConstant(Chunk* chunk, Value value) {
+int addConstant(Chunk *chunk, Value value) {
   writeValueArray(&chunk->constants, value);
   return chunk->constants.count - 1;
 }

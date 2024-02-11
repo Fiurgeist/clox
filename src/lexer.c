@@ -5,14 +5,14 @@
 #include "lexer.h"
 
 typedef struct {
-  const char* start;
-  const char* current;
+  const char *start;
+  const char *current;
   int line;
 } Lexer;
 
 Lexer lexer;
 
-void initLexer(const char* source) {
+void initLexer(const char *source) {
   lexer.start = source;
   lexer.current = source;
   lexer.line = 1;
@@ -71,7 +71,7 @@ static const char* skipWhitespace() {
       if (peekNext() == '/') {
         while (peek() != '\n' && !isAtEnd()) advance();
       } else if (peekNext() == '*') {
-        const char* err = blockComment();
+        const char *err = blockComment();
         if (err != NULL) return err;
       } else {
         return 0;
@@ -101,7 +101,7 @@ static Token makeToken(TokenType type) {
   return token;
 }
 
-static Token errorToken(const char* msg) {
+static Token errorToken(const char *msg) {
   Token token;
   token.type = TOKEN_ERROR;
   token.start = msg;
@@ -142,7 +142,7 @@ static bool isAlpha(char c) {
   return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
 }
 
-static TokenType checkKeyword(int start, int length, const char* rest, TokenType type) {
+static TokenType checkKeyword(int start, int length, const char *rest, TokenType type) {
   if (lexer.current - lexer.start == start + length
       && memcmp(lexer.start + start, rest, length) == 0) {
     return type;
@@ -190,7 +190,7 @@ static Token identifier() {
 }
 
 Token scanToken() {
-  const char* err = skipWhitespace();
+  const char *err = skipWhitespace();
   if (err != NULL) return errorToken(err);
 
   lexer.start = lexer.current;

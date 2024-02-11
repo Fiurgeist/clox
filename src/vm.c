@@ -86,7 +86,7 @@ static InterpretResult run() {
   for (;;) {
 #ifdef DEBUG_TRACE_EXECUTION
     printf("          ");
-    for (Value* slot = vm.stack; slot < vm.stackTop; ++slot) {
+    for (Value *slot = vm.stack; slot < vm.stackTop; ++slot) {
       printf("[ ");
       printValue(*slot);
       printf(" ]");
@@ -144,7 +144,7 @@ static InterpretResult run() {
 #undef READ_BYTE
 }
 
-InterpretResult interpret(const char* source) {
+InterpretResult interpret(const char *source) {
   Chunk chunk;
   initChunk(&chunk);
 
