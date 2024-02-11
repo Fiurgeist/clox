@@ -24,12 +24,12 @@ struct ObjString {
   Obj obj;
   int length;
   char *chars;
+  uint32_t hash;
 };
 
 ObjString* takeString(char *chars, int length);
 ObjString* copyString(const char *chars, int length);
 void printObject(Value value);
-bool objectsEqual(Value a, Value b);
 
 static inline bool isObjValue(Value value, ObjType type) {
   return IS_OBJ(value) && AS_OBJ(value)->type == type;

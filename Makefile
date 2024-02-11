@@ -1,6 +1,6 @@
 .PHONY: build
 build:
-	gcc -std=c99 ./src/*.c -o clox
+	gcc -std=c99 -Wno-discarded-qualifiers ./src/*.c -o clox
 
 .PHONY: run
 run: build
