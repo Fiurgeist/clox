@@ -4,10 +4,10 @@ build:
 
 .PHONY: run
 run: build
-	./clox
+	./clox $(file)
 
 .PHONY: help
 help:
 	@echo "Please use 'make <target>' where <target> is one of"
-	@echo "  run                     run the vm"
+	@echo "  run [file=SCRIPT]       run the vm"
 	@echo "  build                   build executable"
