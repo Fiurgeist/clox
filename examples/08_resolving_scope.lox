@@ -1,0 +1,32 @@
+// adding scope resolver prints "global\nglobal" instead of "global\nblock"
+var a = "global";
+{
+  fun showA() {
+    print a;
+  }
+
+  showA(); // "global"
+  var a = "block";
+  showA(); // "global"
+  print a;
+}
+
+// it also now disallowes reinitializing of shadowed vars
+var b = "outer";
+{
+  // var b = b; // Error at 'b': Can't read local variable in its own initializer
+  b = b; // fine
+  b = "block"; // fine
+}
+print b; // "block"
+
+// resolver checks for unused local variables
+/*
+fun x() {
+  fun y() {} // Error at 'y': Local variable is unused
+}
+
+{
+  var z = 42; // Error at 'z': Local variable is unused
+}
+*/

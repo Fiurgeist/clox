@@ -1,0 +1,2 @@
+// print is a built-in statement not a function
+print "Hello, world!";

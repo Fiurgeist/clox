@@ -1,0 +1,8 @@
+/*
+ * Multi-line comment
+ */
+var foo = "bar";
+var x = 42.0; /* everything */
+
+print x; // 42.0
+print x = "bar"; // "bar"

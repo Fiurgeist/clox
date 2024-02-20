@@ -1,0 +1,77 @@
+class Answer {
+  do() {
+    return 42;
+  }
+}
+
+print Answer; // "Answer"
+
+var inst = Answer();
+print inst; // "Answer instance"
+
+// print inst.foo; // RuntimeError undefined property
+inst.foo = 23;
+print inst.foo; // 23
+
+print inst.do(); // 42
+
+var m = inst.do;
+print m(); // 42
+
+// inst.bar(); // RuntimeError undefined property
+
+class Person {
+  sayName() {
+    print this.name;
+  }
+}
+
+var jane = Person();
+jane.name = "Jane";
+
+var bill = Person();
+bill.name = "Bill";
+
+bill.sayName = jane.sayName;
+bill.sayName(); // "Jane"
+
+class Thing {
+  getCallback() {
+    fun localFunction() {
+      print this;
+    }
+
+    return localFunction;
+  }
+}
+
+var callback = Thing().getCallback();
+callback(); // "Thing instance"
+
+class Foo {
+  init() {
+    print "Foo constructor";
+    // return "error"; // Error at 'return': Can't return a value from an initializer
+
+    // it implicitly returns "this"
+  }
+}
+
+var foo = Foo(); // "Foo constructor"
+print foo.init(); // "Foo constructor" and "Foo instance"
+callback(); // "Thing instance"
+
+class UnreachablePrint {
+  init() {
+    return; // early return also implicitly returns "this"
+    print "can't return value, but early return is allowed";
+  }
+}
+
+print UnreachablePrint().init(); // "UnreachablePrint instance"
+
+fun init() {
+  return 42;
+}
+
+print init(); // 42

@@ -1,0 +1,20 @@
+if (42) {
+  print "The anwser to everything";
+}
+
+if (false) {
+  print "Error: false is true";
+} else {
+  print "Else works";
+}
+
+if (42 and false or 23 and true){
+  print "many nd/or";
+}
+
+print "hi" or 2; // "hi"
+print nil or "yes"; // "yes"
+
+var defined = "yes and";
+print defined and "yes"; // "yes"
+print !defined and "yes"; // false
