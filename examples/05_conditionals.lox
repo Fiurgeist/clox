@@ -9,7 +9,7 @@ if (false) {
 }
 
 if (42 and false or 23 and true){
-  print "many nd/or";
+  print "many and/or";
 }
 
 print "hi" or 2; // "hi"

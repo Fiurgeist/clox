@@ -75,6 +75,7 @@ static bool concatenate() {
 
 static InterpretResult run() {
 #define READ_BYTE() (*vm.ip++)
+#define READ_SHORT() ((uint16_t)((READ_BYTE() << 8) | READ_BYTE()))
 #define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
 #define READ_STRING() AS_STRING(READ_CONSTANT())
 #define BINARY_OP(valueType, operator) \
@@ -132,6 +133,11 @@ static InterpretResult run() {
       pop();
       break;
     }
+    case OP_SET_LOCAL: {
+      uint8_t slot = READ_BYTE();
+      vm.stack[slot] = peek(0);
+      break;
+    }
     case OP_SET_GLOBAL: {
       ObjString *name = READ_STRING();
       if (tableSet(&vm.globals, name, peek(0))) {
@@ -171,6 +177,21 @@ static InterpretResult run() {
       printValue(pop());
       printf("\n");
       break;
+    case OP_JUMP: {
+      uint16_t offset = READ_SHORT();
+      vm.ip += offset;
+      break;
+    }
+    case OP_JUMP_IF_FALSE: {
+      uint16_t offset = READ_SHORT();
+      if (isFalsey(peek(0))) vm.ip += offset;
+      break;
+    }
+    case OP_LOOP: {
+      uint16_t offset = READ_SHORT();
+      vm.ip -= offset;
+      break;
+    }
     case OP_RETURN:
       return INTERPRET_OK;
     default:
@@ -180,6 +201,7 @@ static InterpretResult run() {
 #undef BINARY_OP
 #undef READ_STRING
 #undef READ_CONSTANT
+#undef READ_SHORT
 #undef READ_BYTE
 }
 
