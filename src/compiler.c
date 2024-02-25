@@ -99,6 +99,8 @@ typedef struct {
   Local locals[UINT8_COUNT];
   int localCount;
   int scopeDepth;
+  bool inLoop;
+  int breakJump;
 } Compiler;
 
 Parser parser;
@@ -227,6 +229,8 @@ static void patchJump(int offset) {
 static void initCompiler(Compiler *compiler) {
   compiler->localCount = 0;
   compiler->scopeDepth = 0;
+  compiler->inLoop = false;
+  compiler->breakJump = -1;
 
   current = compiler;
 }
@@ -452,6 +456,9 @@ static void ifStatement() {
 }
 
 static void whileStatement() {
+  bool previousInLoop = current->inLoop;
+  current->inLoop = true;
+
   int loopStart = currentChunk()->count;
 
   consume(TOKEN_LEFT_PAREN, "Expect '(' after 'while'");
@@ -465,6 +472,13 @@ static void whileStatement() {
 
   patchJump(exitJump);
   emitByte(OP_POP);
+
+  if (current->breakJump != -1) {
+    patchJump(current->breakJump);
+    current->breakJump = -1;
+  }
+
+  current->inLoop = previousInLoop;
 }
 
 static void varDeclaration() {
@@ -487,7 +501,10 @@ static void expressionStatement() {
 }
 
 static void forStatement() {
+  bool previousInLoop = current->inLoop;
+  current->inLoop = true;
   beginScope();
+
   consume(TOKEN_LEFT_PAREN, "Expect '(' after 'for'");
   if (match(TOKEN_SEMICOLON)) {
     // no initializer
@@ -526,8 +543,13 @@ static void forStatement() {
     patchJump(exitJump);
     emitByte(OP_POP);
   }
+  if (current->breakJump != -1) {
+    patchJump(current->breakJump);
+    current->breakJump = -1;
+  }
 
   endScope();
+  current->inLoop = previousInLoop;
 }
 
 static void synchronize() {
@@ -567,6 +589,10 @@ static void statement() {
     ifStatement();
   } else if (match(TOKEN_WHILE)) {
     whileStatement();
+  } else if (match(TOKEN_BREAK)) {
+    if (!current->inLoop) errorAt(&parser.previous, "Outside of a loop");
+    consume(TOKEN_SEMICOLON, "Expect ';' after break");
+    current->breakJump = emitJump(OP_JUMP);
   } else {
     expressionStatement();
   }
@@ -649,6 +675,7 @@ ParseRule rules[] = {
   [TOKEN_STRING]        = {string,   NULL,   PREC_NONE},
   [TOKEN_NUMBER]        = {number,   NULL,   PREC_NONE},
   [TOKEN_AND]           = {NULL,     and,    PREC_AND},
+  [TOKEN_BREAK]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_CLASS]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_ELSE]          = {NULL,     NULL,   PREC_NONE},
   [TOKEN_FALSE]         = {literal,  NULL,   PREC_NONE},
