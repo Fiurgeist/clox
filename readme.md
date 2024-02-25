@@ -3,7 +3,7 @@
 A version of the Bytecode VM written in C.
 Based on the book https://craftinginterpreters.com.
 
-For a Tree-Walk Interpreter written in Go see [clox](https://github.com/Fiurgeist/golox).
+For a Tree-Walk Interpreter written in Go see [golox](https://github.com/Fiurgeist/golox).
 
 #### Additions to Lox
 
