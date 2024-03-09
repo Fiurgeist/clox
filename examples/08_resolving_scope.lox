@@ -20,7 +20,7 @@ var b = "outer";
 }
 print b; // "block"
 
-// resolver checks for unused local variables
+// checks for unused local variables
 /*
 fun x() {
   fun y() {} // Error at 'y': Local variable is unused

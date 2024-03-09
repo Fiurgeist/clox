@@ -94,6 +94,7 @@ typedef struct {
   Token name;
   int depth;
   bool isCaptured;
+  bool isUsed;
 } Local;
 
 typedef struct {
@@ -260,6 +261,7 @@ static void initCompiler(Compiler *compiler, FunctionType type) {
   Local *local = &current->locals[current->localCount++];
   local->depth = 0;
   local->isCaptured = false;
+  local->isUsed = false;
   local->name.start = "";
   local->name.length = 0;
 }
@@ -287,7 +289,9 @@ static void endScope() {
   while (current->localCount > 0 &&
     current->locals[current->localCount - 1].depth > current->scopeDepth
   ) {
-    if (current->locals[current->localCount - 1].isCaptured) {
+    if (!current->locals[current->localCount - 1].isUsed) {
+      errorAt(&current->locals[current->localCount - 1].name, "Local variable is unused");
+    } else if (current->locals[current->localCount - 1].isCaptured) {
       emitByte(OP_CLOSE_UPVALUE);
     } else {
       emitByte(OP_POP);
@@ -383,6 +387,8 @@ static int resolveLocal(Compiler *compiler, Token *name) {
       if (local->depth == -1) {
         error("Can't read local variable in its own initializer");
       }
+
+      local->isUsed = true;
       return i;
     }
   }
@@ -437,6 +443,7 @@ static void addLocal(Token name) {
   local->name = name;
   local->depth = -1; // uninitialized state
   local->isCaptured = false;
+  local->isUsed = false;
 }
 
 static void declareVariable() {
@@ -454,7 +461,6 @@ static void declareVariable() {
       error("Already a variable with this name in this scope");
     }
   }
-
   addLocal(*name);
 }
 
@@ -552,6 +558,16 @@ static void function(FunctionType type) {
 
   consume(TOKEN_LEFT_BRACE, "Expect '{' before function body");
   block();
+
+  // no end scope, so checking isUsed here separatly
+  while (current->localCount > 0 &&
+    current->locals[current->localCount - 1].depth == current->scopeDepth
+  ) {
+    if (!current->locals[current->localCount - 1].isUsed) {
+      errorAt(&current->locals[current->localCount - 1].name, "Local variable is unused");
+    }
+    current->localCount--;
+  }
 
   ObjFunction *function = endCompiler();
   emitBytes(OP_CLOSURE, makeConstant(OBJ_VAL(function)));
