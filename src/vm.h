@@ -23,10 +23,17 @@ typedef struct {
 
   Value stack[STACK_MAX];
   Value *stackTop;
+
   Table globals;
   Table strings;
   ObjUpvalue* openUpvalues;
   Obj *objects;
+
+  size_t bytesAllocated;
+  size_t nextGC;
+  int greyCount;
+  int greyCapacity;
+  Obj **greyStack;
 } VM;
 
 typedef enum {
@@ -40,5 +47,7 @@ extern VM vm;
 void initVM();
 void freeVM();
 InterpretResult interpret(const char *source);
+void push(Value value);
+Value pop();
 
 #endif

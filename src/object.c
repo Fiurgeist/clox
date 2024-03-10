@@ -16,9 +16,15 @@ const uint32_t offsetBasis = 2166136261;
 static Obj* allocateObject(size_t size, ObjType type) {
   Obj *object = (Obj*)reallocate(NULL, 0, size);
   object->type = type;
+  object->isMarked = false;
   object->next = vm.objects;
 
   vm.objects = object;
+
+#ifdef DEBUG_LOG_GC
+  printf("%p allocate %zu for %d\n", (void*)object, size, type);
+#endif
+
   return object;
 }
 
@@ -56,7 +62,10 @@ static ObjString* allocateString(char *chars, int length, uint32_t hash) {
   string->chars = chars;
   string->hash = hash;
 
+  push(OBJ_VAL(string));
   tableSet(&vm.strings, string, NIL_VAL);
+  pop();
+
   return string;
 }
 
@@ -119,6 +128,6 @@ void printObject(Value value) {
   case OBJ_STRING: printf("%s", AS_CSTRING(value)); break;
   case OBJ_UPVALUE: printf("upvalue"); break;
   default:
-    printf("Unhandled object type &d\n", OBJ_TYPE(value));
+    printf("Unhandled object type %d\n", OBJ_TYPE(value));
   }
 }

@@ -14,12 +14,12 @@
 
 VM vm;
 
-static void push(Value value) {
+void push(Value value) {
   *vm.stackTop = value;
   vm.stackTop++;
 }
 
-static Value pop() {
+Value pop() {
   vm.stackTop--;
   return *vm.stackTop;
 }
@@ -45,6 +45,13 @@ static void resetStack() {
 void initVM() {
   resetStack();
   vm.objects = NULL;
+
+  vm.bytesAllocated = 0;
+  vm.nextGC = 1024 * 1024;
+  vm.greyCount = 0;
+  vm.greyCapacity = 0;
+  vm.greyStack = NULL;
+
   initTable(&vm.globals);
   initTable(&vm.strings);
 
@@ -74,9 +81,20 @@ static void runtimeError(const char *format, ...) {
 }
 
 void freeVM() {
+#ifdef DEBUG_LOG_GC
+  printf("-- vm shutdown\n");
+  printf("   used %zu bytes\n", vm.bytesAllocated);
+#endif
+
   freeTable(&vm.strings);
   freeTable(&vm.globals);
   freeObjects();
+
+#ifdef DEBUG_LOG_GC
+  if (vm.bytesAllocated > 0) {
+    printf("   %zu bytes were not properly freed\n", vm.bytesAllocated);
+  }
+#endif
 }
 
 static Value peek(int distance) {
@@ -158,8 +176,8 @@ static bool isFalsey(Value value) {
 }
 
 static bool concatenate() {
-  ObjString *b = AS_STRING(pop());
-  ObjString *a = AS_STRING(pop());
+  ObjString *b = AS_STRING(peek(0));
+  ObjString *a = AS_STRING(peek(1));
 
   int length = a->length + b->length;
   char *chars = ALLOCATE(char, length + 1);
@@ -168,6 +186,9 @@ static bool concatenate() {
   chars[length] = '\0';
 
   ObjString *result = takeString(chars, length);
+
+  pop();
+  pop();
   push(OBJ_VAL(result));
 }
 
