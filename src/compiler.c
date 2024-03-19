@@ -124,6 +124,7 @@ typedef struct Compiler {
 
 typedef struct ClassCompiler {
   struct ClassCompiler *enclosing;
+  bool hasSuperclass;
 } ClassCompiler;
 
 Parser parser;
@@ -384,7 +385,7 @@ static int resolveUpvalue(Compiler *compiler, Token *name) {
   return -1;
 }
 
-static void addLocal(Token name) {
+static void addLocal(Token name, bool isUsed) {
   if (current->localCount == UINT8_COUNT) {
     error("Too many local variables in function");
     return;
@@ -394,7 +395,7 @@ static void addLocal(Token name) {
   local->name = name;
   local->depth = -1; // uninitialized state
   local->isCaptured = false;
-  local->isUsed = false;
+  local->isUsed = isUsed;
 }
 
 static void declareVariable() {
@@ -412,7 +413,7 @@ static void declareVariable() {
       error("Already a variable with this name in this scope");
     }
   }
-  addLocal(*name);
+  addLocal(*name, false);
 }
 
 static uint8_t parseVariable(const char *errorMessage) {
@@ -544,6 +545,13 @@ static void variable(bool canAssign) {
   namedVariable(parser.previous, canAssign);
 }
 
+static Token syntheticToken(const char *text) {
+  Token token;
+  token.start = text;
+  token.length = (int)strlen(text);
+  return token;
+}
+
 static void this(bool canAssign) {
   if (currentClass == NULL) {
     error("Cant't use 'this' outside of a class");
@@ -562,6 +570,29 @@ static void unary(bool canAssign) {
   case TOKEN_BANG: emitByte(OP_NOT); break;
   case TOKEN_MINUS: emitByte(OP_NEGATE); break;
   default: error("Preceded by invalid unary operator");
+  }
+}
+
+static void super(bool canAssign) {
+  if (currentClass == NULL) {
+    error("Can't use 'super' outside of a class");
+  } else if (!currentClass->hasSuperclass) {
+    error("Can't use 'super' in a class with no superclass");
+  }
+
+  consume(TOKEN_DOT, "Expect '.' after 'super'");
+  consume(TOKEN_IDENTIFIER, "Expect superclass method name");
+  uint8_t name = identifierConstant(&parser.previous);
+
+  namedVariable(syntheticToken("this"), false);
+  if (match(TOKEN_LEFT_PAREN)) {
+    uint8_t argCount = argumentList();
+    namedVariable(syntheticToken("super"), false);
+    emitBytes(OP_SUPER_INVOKE, name);
+    emitByte(argCount);
+  } else {
+    namedVariable(syntheticToken("super"), false);
+    emitBytes(OP_GET_SUPER, name);
   }
 }
 
@@ -640,8 +671,25 @@ static void classDeclaration() {
   defineVariable(nameConstant);
 
   ClassCompiler classCompiler;
+  classCompiler.hasSuperclass = false;
   classCompiler.enclosing = currentClass;
   currentClass = &classCompiler;
+
+  if (match(TOKEN_LESS)) {
+    consume(TOKEN_IDENTIFIER, "Expect superclass name");
+    variable(false);
+    if (identifiersEqual(&name, &parser.previous)) {
+      error("A class can't inherit from itself");
+    }
+
+    beginScope();
+    addLocal(syntheticToken("super"), true);
+    defineVariable(0);
+
+    namedVariable(name, false);
+    emitByte(OP_INHERIT);
+    classCompiler.hasSuperclass = true;
+  }
 
   namedVariable(name, false);
   consume(TOKEN_LEFT_BRACE, "Expect '{' before class body");
@@ -650,6 +698,10 @@ static void classDeclaration() {
   }
   consume(TOKEN_RIGHT_BRACE, "Expect '}' after class body");
   emitByte(OP_POP);
+
+  if (classCompiler.hasSuperclass) {
+    endScope();
+  }
 
   currentClass = currentClass->enclosing;
 }
@@ -938,7 +990,7 @@ ParseRule rules[] = {
   [TOKEN_OR]            = {NULL,     or,     PREC_OR},
   [TOKEN_PRINT]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_RETURN]        = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_SUPER]         = {NULL,     NULL,   PREC_NONE},
+  [TOKEN_SUPER]         = {super,    NULL,   PREC_NONE},
   [TOKEN_THIS]          = {this,     NULL,   PREC_NONE},
   [TOKEN_TRUE]          = {literal,  NULL,   PREC_NONE},
   [TOKEN_VAR]           = {NULL,     NULL,   PREC_NONE},
