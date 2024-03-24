@@ -1,5 +1,6 @@
 // this bytecode vm (unoptimised): ~6 seconds
 // this bytecode vm (replace modulo with bitwise AND): ~3 seconds
+// this bytecode vm (NAN boxing): ~3 seconds
 // see github.com/Fiurgeist/golox for the tree-walk interpreter version that takes ~54 seconds
 
 class Zoo {

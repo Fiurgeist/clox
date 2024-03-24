@@ -1,7 +1,8 @@
 // comically inefficient way to calculate Fibonacci numbers to compare performance
 // an equivalent C program should finish in less than a second
-// this bytecode vm (unoptimised): ~11 seconds
-// this bytecode vm (replace modulo with bitwise AND): ~10 seconds
+// this bytecode vm (unoptimised): ~11.5 seconds
+// this bytecode vm (replace modulo with bitwise AND): ~10.4 seconds
+// this bytecode vm (NAN boxing): ~9.8 seconds
 // python3 (interpreted): ~22 seconds
 // python3 (cpython): ~12 seconds
 // see github.com/Fiurgeist/golox for the tree-walk interpreter version that takes ~100 seconds

@@ -12,8 +12,6 @@ For a Tree-Walk Interpreter written in Go see [golox](https://github.com/Fiurgei
   * `break` keyword
 * Parser
   * `break` statement
-* Resolver
+* VM
   * ParseError: unused local variable
-* Interpreter
   * handle `break` statement in `for` and `while` loops
-  * handle return statement via state instead of with exception handling (~4 times faster)
